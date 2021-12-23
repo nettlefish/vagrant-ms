@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+import json
+import sys
+import getopt
+from urllib.parse import unquote
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+
+
+class RequestHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        path = str(self.path)
+        length = int(self.headers['content-length'])
+        data = self.rfile.read(length)
+        self.send_response(200)
+        self.end_headers()
+        json_string = json.loads(data)
+        if std :
+           print(json_string)
+        with open(logpath, "a") as logfile:
+             logfile.write(json.dumps(json_string, indent=4))
+#                 logfile.write(json_string)
+
+
+if __name__ == "__main__":
+    port = 18000
+    logpath = '/vagrant/logs/alerting.log'
+    std = False
+
+    try:
+       opts, args = getopt.getopt(sys.argv[1:],'hsp:l:',['help','stdout', 'port','log'])
+    except getopt.GetoptError:
+       print("cmd: webhook_rcv -p port_num")
+       sys.exit(2)
+    
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+           print("cmd: webhook_rcv -h -s -p port_num -l logfilename")
+           sys.exit(2)
+        if opt in ('-s', '--stdout'):
+           std = True
+        if opt in ('-p', '--port'):
+            try:
+               port=int(arg)
+            except Exception as e:
+                 print("cmd: webhook_rcv -h -s -p port_num -l logfilename,",str(e))
+                 sys.exit(2)
+            if (port>=65535 or  port <=10000) :
+               print("cmd: webhook_rcv -h -s -p port_num -l logfilename")
+               sys.exit(2)
+        if opt in ('-l','--log'):
+            logpath=arg 
+
+    try:
+      fh = open(logpath, "a")
+    except Exception as e:
+      print("Log file open error:",str(e))
+      sys.exit(2)
+
+    addr = ('', port)
+    server = HTTPServer(addr, RequestHandler)
+    server.serve_forever()
+
+

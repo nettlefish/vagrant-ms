@@ -1,0 +1,12 @@
+[Unit]
+Description=Alertdump logs the json payloads from Alertmanager.
+After=network.target
+
+[Service]
+User=vagrant
+ExecStart=/usr/bin/gethook
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

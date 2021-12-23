@@ -1,0 +1,43 @@
+{{ define "demo.html" }}
+<table border="1">
+        <tr>
+                <td><strong>Alarm_Item</strong></td>
+                <td><strong>Alarm_Instance</strong></td>
+                <td><strong>Alarm_Level</strong></td>
+                <td><strong>Alarm_Subject</strong></td>
+                <td><strong>Alarm_Description</strong></td>
+                <td><strong>Alarm_Status</strong></td>
+                <td><strong>Alarm_Start</strong></td>
+                <td><strong>Alarm_End</strong></td>
+        </tr>
+          {{ if gt (len .Alerts.Firing) 0 }}
+                  {{ range $i, $alert := .Alerts }}
+                      <tr>
+                        <td>{{ index $alert.Labels "alertname" }}</td>
+                        <td>{{ index $alert.Labels "instance" }}</td>
+                        <td>{{ index $alert.Labels "severity" }}</td>
+                        <td>{{ index $alert.Annotations "summary" }}</td>
+                        <td>{{ index $alert.Annotations "description" }}</td>
+                        <td>{{ $alert.Status }}</td>
+                        <td>{{ ($alert.StartsAt.Add 28800e9).Format "2006-01-02 15:04:05"  }}</td>
+                        <td>{{ "NULL" }}</td>
+                      </tr>
+                 {{ end }}
+         {{ else }}
+                  {{ range $i, $alert := .Alerts }}
+                      <tr>
+                        <td>{{ index $alert.Labels "alertname" }}</td>
+                        <td>{{ index $alert.Labels "instance" }}</td>
+                        <td>{{ index $alert.Labels "severity" }}</td>
+                        <td>{{ index $alert.Annotations "summary" }}</td>
+                        <td>{{ index $alert.Annotations "description" }}</td>
+                        <td>{{ $alert.Status }}</td>
+                        <td>{{ ($alert.StartsAt.Add 28800e9).Format "2006-01-02 15:04:05"  }}</td>
+                        <td>{{ ($alert.EndsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}</td>
+                      </tr>
+                  {{ end }}
+         {{ end }}
+</table>
+{{ end }}
+
+
