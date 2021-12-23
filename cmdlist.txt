@@ -1,0 +1,299 @@
+
+2、Vagrant ! 开始试试吧！
+
+先准备好：
+一台x86主机（host）
+安装好Ubuntu21.10
+安装好virtualbox
+
+
+开始安装Vagrant:
+
+
+         sudo apt update
+         sudo apt upgrade
+         sudo apt install vagrant
+
+
+验证：
+
+          vagrant  --version
+
+虚机系统运行需要guest操作系统的映像，vagrant需要.box格式的文件，假设guest系统使用ubuntu21.10的版本：
+
+
+           cd /tmp
+           wget https://cloud-images.ubuntu.com/impish/current/impish-server-cloudimg-amd64-vagrant.box
+           vagrant box list
+           vagrant box add ubuntu2110st ./impish-server-cloudimg-amd64-vagrant.box
+           vagrant box list
+
+
+开始使用vagrant生成一个虚机（guest）：
+
+
+           mkdir -p ~/demos/vagrant_startup
+           cd ~/demos/vagrant_startup
+           vagrant init ubuntu2110st
+
+
+在~/demos/vagrant_startup目录下出现了一个Vagrantfile文件，然后启动这个虚机：
+
+
+           vagrant up
+
+
+出现：
+==> default: Mounting shared folders...
+default: /vagrant => /home/Username/demos/vagrant-startup
+表示完成host目录和guest目录的映射，虚机已经完成启动。
+登录此虚机guest,用户名默认为vagrant:
+            vagrant ssh
+            ls /vagrant
+           sudo -i
+           mv /etc/apt/sources.list /etc/apt/sources.list.orig
+           cat  <<  EOF >> /etc/apt/sources.list
+          deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ impish main restricted universe multiverse
+          deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ impish-updates main restricted universe multiverse
+          deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ impish-backports main restricted universe multiverse
+          deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ impish-security main restricted universe multiverse
+           EOF
+
+           apt update
+           apt upgrade
+           apt install vim
+           exit
+           exit
+
+
+可以看到host中~/demos/vagrant_startup/Vagrantfile同样出现在guest的/vagrant目录中。
+已经从虚机退回到了宿主机执行：
+
+            vagrant package --output ub2110lmup.box
+
+
+此时虚机已经关闭，当前目录下生成了一个新的虚机镜像文件，这个镜像文件的ubuntu软件源指向了清华镜像站。同时将新映像加入到本机vagrant镜像库中：
+
+               vagrant box add ub2110lmup ./ub2110lmup.box
+               vagrant box list
+               vagrant global-status
+
+
+删除指定虚机：
+
+
+              cd ~/demos/vagrant_startup/
+              vagrant destroy
+              vagrant box list
+              vagrant box remove ubuntu2110st
+
+
+
+3、再来一个复杂点的例子：应用验证prometheus系统
+Prometheus是最近很热门和广泛应有的网络监控平台，现在使用vagrant创建由三个虚机组成的开发生产环境，一个是一台LAMP主机，还有两个完成prometheus系统监控生产的主机（一台是prometheus监控主机，一台是alertmanager告警发布主机）。用LAMP（LAMP是指Linux（操作系统）+ Apache （HTTP服务器）+ MySQL（数据库）和PHP（网络编程语言））来代表开发生产环境，两台prometheus主机代表监控运行环境。
+
+
+1)  生成Vagrantfile文件
+
+
+图片
+
+
+
+
+2）生成各个主机的bootstrap程序
+
+
+alertmanager:
+
+
+图片
+
+
+LAMP:
+
+图片
+
+
+
+prometheus:
+
+
+图片
+
+
+
+
+
+3）生成prometheus系统业务配置文件
+
+
+alertmanager:
+
+
+图片
+
+
+prometheus:
+
+
+图片
+
+
+
+
+4）生成prometheus系统告警规则配置文件
+
+
+groups:
+
+- name: alerting_rules
+
+rules:
+
+
+- alert: NodeExporterDown
+
+expr: up{job="node"} != 1
+
+for: 1m
+
+labels:
+
+severity: "critical"
+
+annotations:
+
+summary: "Node exporter on {{ $labels.instance }} is not being scraped."
+
+description: "{{$labels.instance}}: job {{$labels.job}} has been down "
+
+…..
+
+涉及prometheus采集网元的各类告警规则，详见~/demos/vagrant-ms/scripts/alerting_rules.yml 文件的描述。
+
+
+5）生成prometheus系统告警分发配置文件
+
+
+alertmanager:
+
+
+图片
+
+
+6）生成webhook client 程序
+实例配置三个告警分发出口，其一是邮件发送，其二是系统告警信息分发日志，设置在alertmanager主机上，持续存储，其三是在宿主主机中启动接收程序。
+
+图片
+
+7）装载，联机，测试，开通，验证
+
+下载相应的程序和数据：
+
+cd /tmp
+
+git clone https://github.com/nettlefish/vagrant-ms.git
+
+mv vagrant-ms ~/demos/.
+
+cd ~/demos/vagrant-ms
+
+修改scripts/alertmanager.yml文件中的以下条目，对应发送邮件账户、服务器信息以及告警邮件的接收信箱：
+
+smtp_smarthost: 'smtp.163.com:25'
+
+smtp_from: 'smtpusername@163.com'
+
+smtp_auth_username: 'smtpusername@163.com'
+
+smtp_auth_password: 'XOXSGXFHXTOXLUXR'
+
+……
+
+- to: 'rcvusername@sina.com'
+
+
+启动各个虚机：
+
+vagrant up
+
+在宿主机上检查各个虚机状态：
+对于LAMP：
+
+http://192.168.56.13/
+
+http://192.168.56.13/info.php
+
+
+对于prometheus：          
+
+            
+
+        http://192.168.56.12:9090/
+
+
+
+对于alertmanager：
+
+
+        http://192.168.56.14:9093
+
+告警验证：
+
+打开浏览器窗口登录接收邮箱页面;
+
+增开三个终端窗口：
+其中窗口1：
+         cd ~/demos/vagrant-ms/logs
+         tail -f alerting.log
+
+
+其中窗口2：
+
+
+cd ~/demos/vagrant-ms/scripts/
+
+python3 ./gethook.py -p 18090 -l  /tmp/testlog.txt
+
+tail -f /tmp/testlog.txt
+
+
+其中窗口3：
+
+vagrant ssh alertmanager
+
+sudo -i
+
+systemctl status node_exporter
+
+systemctl stop node_exporter
+
+     
+
+
+通过浏览器的prometheus、alertmanager和邮件窗口以及终端窗口1,2观察告警生成、衍生、传送过程。
+
+
+通过窗口3：
+
+
+systemctl start node_exporter
+
+systemctl status node_exporter
+
+
+继续通过上述途径，检查告警清除过程。然后通过窗口3：
+
+exit
+
+exit
+
+
+退出各个终端登录，保留终端窗口3，退出虚机运行：
+
+
+cd ~/demos/vagrant-ms
+
+vagrant halt
+
