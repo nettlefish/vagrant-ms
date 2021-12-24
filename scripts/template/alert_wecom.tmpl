@@ -1,0 +1,18 @@
+{{ define "wecom.simple.message" }}
+{{- if gt (len .Alerts.Firing) 0 -}}{{ range .Alerts }}
+@警报
+实例: {{ .Labels.instance }}
+信息: {{ .Annotations.summary }}
+详情: {{ .Annotations.description }}
+时间: {{ (.StartsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}
+{{ end }}{{ end -}}
+{{- if gt (len .Alerts.Resolved) 0 -}}{{ range .Alerts }}
+@恢复
+实例: {{ .Labels.instance }}
+信息: {{ .Annotations.summary }}
+详情: {{ .Annotations.description }}
+时间: {{ (.StartsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}
+恢复: {{ (.EndsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}
+{{ end }}{{ end -}}
+{{- end }}
+~             

@@ -30,6 +30,8 @@ install -d -o alertmanager -g alertmanager /var/lib/alertmanager
 install -m 0644 /vagrant/scripts/{alertmanager,gethook}.service /etc/systemd/system/
 install -m 0644 -D /vagrant/scripts/alertmanager.yml /etc/alertmanager/alertmanager.yml
 install -m 0644 -D /vagrant/scripts/template/alert_mail.tmpl /etc/alertmanager/template/alert_mail.tmpl
+install -m 0644 -D /vagrant/scripts/template/alert_wecom.tmpl /etc/alertmanager/template/alert_wecom.tmpl
+
 
 systemctl daemon-reload
 systemctl enable alertmanager

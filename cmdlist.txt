@@ -213,6 +213,24 @@ smtp_auth_password: 'XOXSGXFHXTOXLUXR'
 
 - to: 'rcvusername@sina.com'
 
+修改wecom/wechat 相关信息，详见https://work.weixin.qq.com/中相关指引：
+    wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+    wechat_api_corp_id: 'xwx0x4x1xdxfxdx4xy'
+
+    to_user: '@all'
+    message: '{{ template "wecom.simple.message" . }}'
+    agent_id: '1000002' 
+    api_secret: 'XAXeXqXkXpXpXbX5X5XXWX8X6XwXnXdXXXaXOX3XAXM'
+
+    to_user: '@all'
+    message: '{{ template "wecom.simple.message" . }}'
+    agent_id: '1000003'
+    api_secret: 'X-XaX7XgXYXXXLXnXCXSXKXiXXyXFX1XSX5XVXFXxXX'
+
+    to_user: '@all'
+    message: '{{ template "wecom.simple.message" . }}'
+    agent_id: '1000004'
+    api_secret: 'XoXGuX=XvXYXQXP_XMXX2XNXeXNXUXQTXXIX4XBXnXYXJX'
 
 启动各个虚机：
 

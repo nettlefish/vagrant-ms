@@ -1,25 +1,45 @@
 global:
-  resolve_timeout: 5m
+  #The default SMTP from header field.
   smtp_smarthost: 'smtp.163.com:25'
   smtp_from: 'smtpusername@163.com'
   smtp_auth_username: 'smtpusername@163.com'
-  smtp_auth_password: 'XOXSGXFHXTOXLUXR'
+  smtp_auth_password: 'XOXSXPXHXXOXLXLX'
   smtp_require_tls: false
 
+  #API
+  wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+  wechat_api_corp_id: 'xwx0x4x1xdxfxdx4xy'
+
+  # ResolveTimeout is the default value used by alertmanager if the alert does
+  # not include EndsAt, after this time passes it can declare the alert as resolved if it has not been updated.
+  # This has no impact on alerts from Prometheus, as they always include EndsAt.
+  resolve_timeout: 5m
+  
+
 templates:
-  - 'template/alert_mail.tmpl'
+  - 'template/*.tmpl'
 
 route:
+  receiver: 'byemail'
   group_by: ['alertname']
   group_wait: 30s
   group_interval: 5m
-  repeat_interval: 1h
-  receiver: 'byemail'
+  repeat_interval: 12h
+  routes:
+   - receiver: 'msql' 
+     group_wait: 10s
+     match_re:
+        job: mysql
+   - receiver: 'apache'
+     group_wait: 10s
+     match_re:
+        job: apache
 
+ 
 receivers:
 - name: 'byemail'
   email_configs:
-  - to: 'rcvusername@sina.com'
+  - to: 'allalertrcvusername@sina.com'
     html: '{{ template "demo.html" . }}'
     headers: { Subject: "[!WARN!] Vagrant Demos System Alarm Notification"}
     send_resolved: true
@@ -28,6 +48,45 @@ receivers:
     send_resolved: true
   - url: 'http://MASTER:18090'
     send_resolved: true
+  wechat_configs:
+  - send_resolved: true 
+    to_user: '@all'
+    message: '{{ template "wecom.simple.message" . }}'
+    agent_id: '1000002' 
+    api_secret: 'XAXeXqXkXpXpXbX5X5XXWX8X6XwXnXdXXXaXOX3XAXM'
+
+- name: 'msql'
+  email_configs:
+  - to: 'dbrcvusername@sina.com'
+    html: '{{ template "demo.html" . }}'
+    headers: { Subject: "[!WARN!]MSQL Alarm Notification"}
+    send_resolved: true
+  webhook_configs:
+  - url: 'http://MASTER:18091'
+    send_resolved: true
+  wechat_configs:
+  - send_resolved: true
+    to_user: '@all'
+    message: '{{ template "wecom.simple.message" . }}'
+    agent_id: '1000003'
+    api_secret: 'X-XaX7XgXYXXXLXnXCXSXKXiXXyXFX1XSX5XVXFXxXX'
+
+- name: 'apache'
+  email_configs:
+  - to: 'httprcvusername@sina.com'
+    html: '{{ template "demo.html" . }}'
+    headers: { Subject: "[!WARN!]Apache Alarm Notification"}
+    send_resolved: true
+  webhook_configs:
+  - url: 'http://MASTER:18092'
+    send_resolved: true
+  wechat_configs:
+  - send_resolved: true
+    to_user: '@all'
+    message: '{{ template "wecom.simple.message" . }}'
+    agent_id: '1000004'
+    api_secret: 'XoXGuX=XvXYXQXP_XMXX2XNXeXNXUXQTXXIX4XBXnXYXJX'
+  
 
 inhibit_rules:
   - source_match:
