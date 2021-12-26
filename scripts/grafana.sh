@@ -17,11 +17,19 @@ EOF
 
 PKG_PATH="/vagrant/pkgs"
 GRAFANA_VERSION="8.3.3"
+
+PARCHIVE="https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_amd64.deb"
 ARCHIVE="grafana_${GRAFANA_VERSION}_amd64.deb"
 
-apt install -y libfontconfig
 
-dpkg -i "${PKG_PATH}/${ARCHIVE}"
+TMPD=$(mktemp -d)
+
+
+apt install -y libfontconfig
+wget -O "${TMPD}/${ARCHIVE}" "${PARCHIVE}"
+
+
+dpkg -i "${TMPD}/${ARCHIVE}"
 
 install -m 0644 -D /vagrant/scripts/grafana-resources/node-exporter-full_rev24.json /etc/grafana/provisioning/dashboards/node-exporter-full_rev24.json
 install -m 0644 -D /vagrant/scripts/grafana-resources/apache_rev1.json /etc/grafana/provisioning/dashboards/apache_rev1.json
@@ -33,4 +41,6 @@ systemctl start grafana-server
 
 systemctl stop multipath-tools
 systemctl start multipath-tools
+
+
 
