@@ -42,3 +42,19 @@ systemctl start gethook
 
 systemctl stop multipath-tools
 systemctl start multipath-tools
+
+apt install -y cron
+apt install -y apache2-utils
+
+systemctl stop cron
+systemctl start cron
+
+install -m 0755 /vagrant/scripts/ab-test.sh /usr/bin
+
+touch /var/spool/cron/crontabs/root
+chmod 0600 /var/spool/cron/crontabs/root
+
+echo "1,10,20,30,40,50 * * * * /usr/bin/ab-test.sh " >> /var/spool/cron/crontabs/root
+
+
+

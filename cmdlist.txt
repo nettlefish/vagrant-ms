@@ -257,6 +257,13 @@ http://192.168.56.13/info.php
 
         http://192.168.56.14:9093
 
+对于grafana:
+       http://192.168.56.15:3000/
+    1、添加数据源 prometheus
+    2、添加dashboard json: node-exporter-full_rev24.json,apache_rev1.json,mysql-overview_rev5.json,prometheus-blackbox-exporter_rev3.json, alertmanager_rev4.json 
+
+
+
 告警验证：
 
 打开浏览器窗口登录接收邮箱页面;

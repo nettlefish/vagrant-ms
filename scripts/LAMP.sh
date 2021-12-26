@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+export DEBIAN_FRONTEND=noninteractive
+
 mv /etc/localtime /etc/localtime.orig
 cp /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime
 
